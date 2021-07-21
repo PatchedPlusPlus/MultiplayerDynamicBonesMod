@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MultiplayerDynamicBonesMod</RootNamespace>
-    <AssemblyName>MultiplayerDynamicBonesMod</AssemblyName>
+    <AssemblyName>MultiplayerDynamicBonesMod - Unchained</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
