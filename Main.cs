@@ -32,8 +32,24 @@ namespace DBMod
 {
     internal class NDB : MelonMod
     {
+
+
+
+        public static bool xrefCheckMethod(MethodInfo method, string match)
+        {
+            try
+            {
+                return XrefScanner.XrefScan(method)
+                    .Where(instance => instance.Type == XrefType.Global && instance.ReadAsObject().ToString().Contains(match)).Any();
+            }
+            catch { }
+            return false;
+        }
+
         public NDB()
-        { LoadCheck.SFC(); }
+        {
+            //LoadCheck.SFC();
+        }
 
         public const string VERSION_STR = "1042";
 
@@ -124,7 +140,7 @@ namespace DBMod
         //private static HarmonyInstance harmonyInstance;
         private static MethodInfo onJoinedRoomPatch;
         private static MethodInfo onAvatarInstantiatedPatch;
-        public static bool HookLIC = false;
+        public static bool HookLIC = true;
 
         public static HashSet<string> bonesExcluded = new HashSet<string>();
         public static HashSet<string> collidersExcluded = new HashSet<string>();
@@ -234,7 +250,7 @@ namespace DBMod
             otherAvatarMenu.AddSimpleButton("MDB Avatar Config     -     Close", () => otherAvatarMenu.Hide());
             otherAvatarMenu.AddLabel($"Include/Exclude a Specific Avatar");
             otherAvatarMenu.AddLabel($"Excluded avatars wont be multiplayered\nIncluded avatars will bypass filtering, ie: 'Only Friends'");
-            string AvatarExcludeText() // True - Exluded, False - Included 
+            string AvatarExcludeText() // True - Exluded, False - Included
             {
                 return $"Avatar is currently: {(NDBConfig.avatarsToWhichNotApply.ContainsKey(avatarHash) ? (NDBConfig.avatarsToWhichNotApply[avatarHash] ? "Excluded from MDB" : "Included & Bypassing filters") : "N/A")}";
             }
@@ -327,7 +343,7 @@ namespace DBMod
             mrrMenu.AddSimpleButton($"Multiplier+", (() =>
             {
                 if (!NDBConfig.avatarsToAdjustDBRadius.ContainsKey(avatarHash)) NDBConfig.avatarsToAdjustDBRadius.Add(avatarHash, 11);
-                else if (NDBConfig.avatarsToAdjustDBRadius[avatarHash] == 0) NDBConfig.avatarsToAdjustDBRadius[avatarHash] = 11; //If currently replacing switch to x1+1 
+                else if (NDBConfig.avatarsToAdjustDBRadius[avatarHash] == 0) NDBConfig.avatarsToAdjustDBRadius[avatarHash] = 11; //If currently replacing switch to x1+1
                 else NDBConfig.avatarsToAdjustDBRadius[avatarHash] += 1;
                 RadiusButtonEnd();
             }));
@@ -336,7 +352,7 @@ namespace DBMod
             {
                 if (!NDBConfig.avatarsToAdjustDBRadius.ContainsKey(avatarHash)) NDBConfig.avatarsToAdjustDBRadius.Add(avatarHash, 9);
                 else if (NDBConfig.avatarsToAdjustDBRadius[avatarHash] >= 2) NDBConfig.avatarsToAdjustDBRadius[avatarHash] -= 1; //Avoid 0
-                else if (NDBConfig.avatarsToAdjustDBRadius[avatarHash] == 0) NDBConfig.avatarsToAdjustDBRadius[avatarHash] = 9; //If currently replacing switch to x1-1 
+                else if (NDBConfig.avatarsToAdjustDBRadius[avatarHash] == 0) NDBConfig.avatarsToAdjustDBRadius[avatarHash] = 9; //If currently replacing switch to x1-1
                 RadiusButtonEnd();
             }));
 
@@ -922,9 +938,9 @@ namespace DBMod
             try
             {
                 if (MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToWhichNotApply") != "")
-                {//If modprefs has value, then convert into standlone file 
+                {//If modprefs has value, then convert into standlone file
                     if (IsTextFileEmpty(AvatarsToWhichNotApplyPath))
-                    {//Check if file already had content, if so, abort and error 
+                    {//Check if file already had content, if so, abort and error
                         var temp = new HashSet<string>(MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToWhichNotApply").Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
                         NDBConfig.avatarsToWhichNotApply = new Dictionary<string, bool>();
                         foreach (var value in temp)
@@ -959,9 +975,9 @@ namespace DBMod
             try
             {
                 if (MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToAdjustDBRadius") != "")
-                {//If modprefs has value, then convert into standlone file 
+                {//If modprefs has value, then convert into standlone file
                     if (IsTextFileEmpty(AvatarsToAdjustDBRadiusPath))
-                    {//Check if file already had content, if so, abort and error 
+                    {//Check if file already had content, if so, abort and error
                         NDBConfig.avatarsToAdjustDBRadius = new Dictionary<string, int>(MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToAdjustDBRadius").Split(';').Select(s => s.Split(',')).ToDictionary(p => p[0].Trim(), p => Int32.Parse(p[1].Trim())));
                         File.WriteAllLines(AvatarsToAdjustDBRadiusPath, NDBConfig.avatarsToAdjustDBRadius.Select(p => string.Format("{0}, {1}", p.Key, p.Value)), Encoding.UTF8); //Save file
                         MelonPreferences.SetEntryValue<string>("NDB", "AvatarsToAdjustDBRadius", "");
@@ -991,9 +1007,9 @@ namespace DBMod
             try
             {
                 if (MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToAddColliders") != "")
-                {//If modprefs has value, then convert into standlone file 
+                {//If modprefs has value, then convert into standlone file
                     if (IsTextFileEmpty(AvatarsToAddCollidersPath))
-                    {//Check if file already had content, if so, abort and error 
+                    {//Check if file already had content, if so, abort and error
                         NDBConfig.avatarsToAddColliders = new Dictionary<string, bool>(MelonPreferences.GetEntryValue<string>("NDB", "AvatarsToAddColliders").Split(';').Select(s => s.Split(',')).ToDictionary(p => p[0].Trim(), p => bool.Parse(p[1].Trim())));
                         File.WriteAllLines(AvatarsToAddCollidersPath, NDBConfig.avatarsToAddColliders.Select(p => string.Format("{0}, {1}", p.Key, p.Value)), Encoding.UTF8); //Save file
                         MelonPreferences.SetEntryValue<string>("NDB", "AvatarsToAddColliders", "");
@@ -1028,9 +1044,9 @@ namespace DBMod
             {
                 var migrated = false;
                 if (MelonPreferences.GetEntryValue<string>("NDB", MelonPrefName) != "")
-                {//If modprefs has value, then convert into standalone file 
+                {//If modprefs has value, then convert into standalone file
                     if (IsTextFileEmpty(FilePath))
-                    {//Check if file already had content, if so, abort and error 
+                    {//Check if file already had content, if so, abort and error
                         Config = new HashSet<string>(MelonPreferences.GetEntryValue<string>("NDB", MelonPrefName).Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
                         File.WriteAllLines(FilePath, Config, Encoding.UTF8); //Save file
                         MelonPreferences.SetEntryValue<string>("NDB", MelonPrefName, "");
@@ -1304,7 +1320,7 @@ namespace DBMod
                 {
                     LogDebugInt(1, ConsoleColor.Yellow, "Avatar has no active 'Body' mesh. Finding largest active SkinnedMeshRenderer on Avatar for Visibility");
 
-                    //Find the largest mesh that is active and enabled 
+                    //Find the largest mesh that is active and enabled
                     SkinnedMeshRenderer[] meshes = newValue.Item1.GetComponentsInChildren<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer visMesh = null;
                     float meshSize = 0f;
@@ -1364,7 +1380,7 @@ namespace DBMod
         }
 
         private void OnDrawGizmosSelected(DynamicBone db)
-        {//Skeleton for visulization, 
+        {//Skeleton for visulization,
             if (!enabled || db.m_Root == null)
                 return;
 
@@ -1409,10 +1425,10 @@ namespace DBMod
             }
             catch (Exception ex) { LogDebug(ConsoleColor.Red, ex.ToString()); }
         }
-        private static void ApplyDBRadius(DynamicBone bone, string avatarHash) //Change loglevels in here to 2 in a latter version 
+        private static void ApplyDBRadius(DynamicBone bone, string avatarHash) //Change loglevels in here to 2 in a latter version
         {
             try
-            {                                   //If (Has Key OR adjustRadiusForAllZeroBones) && m_root is NOT null && Keyvalue is NOT -2 (Exclude from Radius change) 
+            {                                   //If (Has Key OR adjustRadiusForAllZeroBones) && m_root is NOT null && Keyvalue is NOT -2 (Exclude from Radius change)
                 if ((NDBConfig.avatarsToAdjustDBRadius.ContainsKey(avatarHash) || NDBConfig.adjustRadiusForAllZeroBones) && !(bone.m_Root is null) && !(NDBConfig.avatarsToAdjustDBRadius.ContainsKey(avatarHash) && NDBConfig.avatarsToAdjustDBRadius[avatarHash] == -2))
                 {
                     if (NDBConfig.adjustRadiusExcludeZero && bone.m_Radius == 0) { LogDebugInt(1, ConsoleColor.Yellow, $"Bone {bone.m_Root.name} has a radius of 0 and adjustRadiusExcludeZero is True in Mod settings"); return; }
@@ -1424,8 +1440,8 @@ namespace DBMod
                         adj = -1;
                         if (bone.m_Radius != 0) return; //Exclude bones that have a radius
                     }
-                    float scale = bone.field_Private_Single_1; // m_ObjectScale 
-                    float boneTotalLength = bone.field_Private_Single_0; // m_BoneTotalLength 
+                    float scale = bone.field_Private_Single_1; // m_ObjectScale
+                    float boneTotalLength = bone.field_Private_Single_0; // m_BoneTotalLength
                     float orgRad = -1;
                     string playerKey = bone.transform.root.GetComponentInChildren<VRCPlayer>().prop_String_0;
                     _Instance.originalSettings.TryGetValue(playerKey, out List<OriginalBoneInformation> origList);
@@ -1785,7 +1801,7 @@ namespace DBMod
         }
 
 
-        private static void AddAutoCollidersToPlayer(GameObject avatar, string avatarHash) //AutoAdd Colliders 
+        private static void AddAutoCollidersToPlayer(GameObject avatar, string avatarHash) //AutoAdd Colliders
         {
             try
             {
@@ -2201,7 +2217,7 @@ namespace DBMod
                         reloadDynamicBoneParamInternalFuncs.Item1.Invoke(db, null);
                         reloadDynamicBoneParamInternalFuncs.Item2.Invoke(db, null);
 
-                        ApplyBoneChanges(db); //Needed for the changes to be applied into the active bones 
+                        ApplyBoneChanges(db); //Needed for the changes to be applied into the active bones
 
                         LogDebug(ConsoleColor.DarkGreen, $"Updated setting for bone {db.m_Root.name}");
                     }
