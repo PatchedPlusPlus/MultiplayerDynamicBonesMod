@@ -33,19 +33,6 @@ namespace DBMod
     internal class NDB : MelonMod
     {
 
-
-
-        public static bool xrefCheckMethod(MethodInfo method, string match)
-        {
-            try
-            {
-                return XrefScanner.XrefScan(method)
-                    .Where(instance => instance.Type == XrefType.Global && instance.ReadAsObject().ToString().Contains(match)).Any();
-            }
-            catch { }
-            return false;
-        }
-
         public NDB()
         {
             //LoadCheck.SFC();
@@ -1190,9 +1177,9 @@ namespace DBMod
 
             try
             {
-               // if (__instance.prop_GameObject_0.GetComponentInChildren<PipelineManager>().blueprintId != "") // && __instance.prop_GameObject_0 != null | I should add, as I think this is causing null Item1's....
+                //if (__instance.prop_GameObject_0.GetComponentInChildren<PipelineManager>().blueprintId != "") // && __instance.prop_GameObject_0 != null | I should add, as I think this is causing null Item1's....
                 //{
-                  //  LogDebugInt(5, ConsoleColor.DarkCyan, $"Avatar has Pipeline ID: {(__instance.prop_GameObject_0.GetComponentInChildren<PipelineManager>().blueprintId)}");
+                //    LogDebugInt(5, ConsoleColor.DarkCyan, $"Avatar has Pipeline ID: {(__instance.prop_GameObject_0.GetComponentInChildren<PipelineManager>().blueprintId)}");
                     GameObject avatar = __instance.prop_GameObject_0;
                     //VRC.SDKBase.VRC_AvatarDescriptor avatarDescriptor = new VRC.SDKBase.VRC_AvatarDescriptor(avatarDescriptorPtr);
 
