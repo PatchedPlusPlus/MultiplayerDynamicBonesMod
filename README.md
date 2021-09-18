@@ -28,6 +28,7 @@ F4 | Dump a list of active players working with the mod, useful for debugging.
 F5 | Open an ingame editor of Dynamic Bones settings if enabled in Mod Settings (Local only)
 F8 | List what colliders are attached to your bones.
 F9 | List colliders attached to other player's bones.
+F11 | Prints list of all Avatars in current list
 
 Once the mod has been run at least once, it creates a settings file in the vrchat folder under UserData, in a .cfg file. See the bottom of this document for a list of all settings. 
 
@@ -82,6 +83,13 @@ Or from **MDB Settings** on the Quick Menu
 
 
 ## __Changelog:__
+* Build 1042.2
+	* Fixes for VRC 1132
+		* Updated methods for OnAvatarInstantiated, Reloading avatars after toggling Hand Colliders, Reloading all avatars after toggling Moar Bones.
+	*  Changed the behavior of DistantDisable - This is now "Use **custom** value for disabling bones if beyond a distance"
+		* This previous caused issues if the user disabled the option while bones were disabled for being a certain distance away. However it turns out this feature works differently than expected. 
+			*   The default behavior is m_distanceToDisable = 10 m_distantDisable = True, but m_ReferenceObject = null. The DB docs say with a null refObj it will use the main camera instead. In my testing with MDB uninstalled this is correct, VRC natively disables distant (10m) away bones. We are switching to where m_DistantDisable is always true and we just change the value. This way when DistantDisable is true, we can use the user's value, be it smaller or larger, and when false, the native 10m.
+		
 * Build 1042
 	* Fixes for VRC 1113
 	  * Updated method for OnAvatarInstantiated
@@ -219,7 +227,7 @@ AddAutoCollidersAll | false | Auto add hand colliders to avatars that don't have
 ExcludeSpecificBones | true  | Exclude Specific Bones from being Multiplayered **[QM]** | If the bones/colliders set in the per avatar exclude menus wont be multiplayered
 IncludeSpecificBones | true | Include Specific Bones or Colliders to be Multiplayered[QM] | If the bones/colliders set in the per avatar include menus will bypass filters 
 __Bone settings__ | - | -
-DistanceDisable | true | Disable bones if beyond a distance
+DistanceDisable | true | Custom value for disabling bones if beyond a distance **[QM]**
 DistanceToDisable | 4 | Distance limit | For above setting, in meters
 DisallowInsideColliders | true | Disallow inside colliders from being multiplayered **[QM]**
 DestroyInsideColliders | false | Destroy inside colliders (Requires reload of avatar) **[QM]**
