@@ -152,8 +152,8 @@ namespace ExternalDynamicBoneEditor
         public class IPCHandler
         {
             private PipeStream pipe;
-            private BinaryWriter pipeWriter;
-            private BinaryReader pipeReader;
+            private readonly BinaryWriter pipeWriter;
+            private readonly BinaryReader pipeReader;
 
             public bool IsConnected
             {
@@ -249,7 +249,7 @@ namespace ExternalDynamicBoneEditor
                     case Message.SetBoneEndOffset:
                         {
                             if (IsServer) throw new InvalidOperationException("SetBoneEndOffset can only be called from the client.");
-                            pipeWriter.Write((int)Message.SetBoneInert);
+                            pipeWriter.Write((int)Message.SetBoneEndOffset);
                             pipeWriter.Write(boneName);
                             pipeWriter.Write(((float3)data).x);
                             pipeWriter.Write(((float3)data).y);
@@ -269,7 +269,7 @@ namespace ExternalDynamicBoneEditor
                     case Message.SetBoneForce:
                         {
                             if (IsServer) throw new InvalidOperationException("SetBoneForce can only be called from the client.");
-                            pipeWriter.Write((int)Message.SetBoneInert);
+                            pipeWriter.Write((int)Message.SetBoneForce);
                             pipeWriter.Write(boneName);
                             pipeWriter.Write(((float3)data).x);
                             pipeWriter.Write(((float3)data).y);
@@ -277,7 +277,7 @@ namespace ExternalDynamicBoneEditor
                             break;
                         }
                 }
-
+                pipe.WaitForPipeDrain();
             }
         }
     }
