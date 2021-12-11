@@ -1,11 +1,7 @@
-﻿using System;
-using MelonLoader;
-using UnityEngine;
+﻿using UnityEngine;
 
 using VRC;
 using VRC.UI.Elements.Menus;
-using VRC.Core;
-using VRC.DataModel.Core;
 
 namespace DBMod
 {
@@ -16,7 +12,7 @@ namespace DBMod
         {
             var iuser = GameObject.Find("/UserInterface/Canvas_QuickMenu(Clone)/Container/Window/QMParent/Menu_SelectedUser_Local").GetComponentInChildren<SelectedUserMenuQM>().field_Private_IUser_0;
             var userID = iuser.prop_String_0;
-            foreach (Player player in PlayerManager.Method_Public_Static_ArrayOf_Player_0())
+            foreach (Player player in PlayerManager.prop_PlayerManager_0.field_Private_List_1_Player_0)
             {
                 if (!player) continue;
                 if (player.prop_APIUser_0.id.Equals(userID)) return player;

@@ -7,9 +7,6 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -18,11 +15,8 @@ using HarmonyLib;
 using MelonLoader;
 using UIExpansionKit.API;
 using UnhollowerBaseLib;
-using UnhollowerBaseLib.Runtime;
-using UnhollowerRuntimeLib;
 using UnhollowerRuntimeLib.XrefScans;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 using VRC;
 using VRC.Core;
@@ -39,7 +33,7 @@ namespace DBMod
             //LoadCheck.SFC();
         }
 
-        public const string VERSION_STR = "1043.1";
+        public const string VERSION_STR = "1043.2";
 
         private static class NDBConfig
         {
@@ -848,7 +842,7 @@ namespace DBMod
                 //<3 loukylor
                 //https://github.com/loukylor/VRC-Mods/blob/d80405ab4dbd5242ba38b0180d7313c90ed52cbe/VRChatUtilityKit/Utilities/NetworkEvents.cs#L206
                 OnPlayerAwakePatch = HarmonyInstance.Patch(typeof(VRCPlayer).GetMethods().First(mb => mb.Name.StartsWith("Awake")), null, new HarmonyMethod(typeof(NDB).GetMethod(nameof(OnPlayerAwake), BindingFlags.NonPublic | BindingFlags.Static)));
-                //^-onAvatarInstantiated 
+                //^-onAvatarInstantiated
                 LogDebug(ConsoleColor.Blue, $"Hooked OnPlayerAwake? {((OnPlayerAwakePatch != null) ? "Yes!" : "No: critical error!!")}");
 
                 //LogDebug(ConsoleColor.Blue, $"Hooked convertActionToOnAvatarInstantiateEvent? {((convertActionToOnAvatarInstantiateEvent != null) ? "Yes!" : "No: critical error!!")}");
@@ -1293,7 +1287,7 @@ namespace DBMod
                     GameObject avatar = __instance.prop_GameObject_0;
                     //VRC.SDKBase.VRC_AvatarDescriptor avatarDescriptor = new VRC.SDKBase.VRC_AvatarDescriptor(avatarDescriptorPtr);
 
-                    if (avatar.transform.root.gameObject.name.Contains("[Local]"))//Remove broken DB's on local avatar only? 
+                    if (avatar.transform.root.gameObject.name.Contains("[Local]"))//Remove broken DB's on local avatar only?
                     {
                         avatar.GetComponentsInChildren<DynamicBone>(true).Do(b => { if (b.m_Root == null) UnityEngine.Object.Destroy(b); });
                         _Instance.localPlayer = avatar;
@@ -1576,7 +1570,7 @@ namespace DBMod
                     if ((dbc?.transform?.root?.GetComponentInChildren<VRCPlayer>()?.field_Internal_Animator_0?.isHuman ?? false) && (
                         dbc.transform.IsChildOf(dbc.transform.root.GetComponentInChildren<VRCPlayer>().field_Internal_Animator_0.GetBoneTransform(HumanBodyBones.Head)) ||
                         dbc.gameObject == dbc.transform.root.GetComponentInChildren<VRCPlayer>().field_Internal_Animator_0.GetBoneTransform(HumanBodyBones.Head).gameObject) &&
-                        !dbc.transform.root.GetComponentInChildren<VRCPlayer>().field_Internal_Animator_0.GetBoneTransform(HumanBodyBones.Head).transform.GetPath().Contains("[Local]")//Dont effect non-local avatars, as this issue only effects local ones 
+                        !dbc.transform.root.GetComponentInChildren<VRCPlayer>().field_Internal_Animator_0.GetBoneTransform(HumanBodyBones.Head).transform.GetPath().Contains("[Local]")//Dont effect non-local avatars, as this issue only effects local ones
                         )
                     {
                         var path = dbc.transform.root.GetComponentInChildren<VRCPlayer>().field_Internal_Animator_0.GetBoneTransform(HumanBodyBones.Head).transform.GetPath();
@@ -1636,7 +1630,7 @@ namespace DBMod
         }
 
         private void VisualizeDB(DynamicBone db, bool parent)
-        {//Skeleton for visulization, 
+        {//Skeleton for visulization,
             if (db.m_Root == null || db.m_Root.Equals(null))
             {
                 LogDebugInt(2, ConsoleColor.Red, $"db m_Root is null");
@@ -1677,7 +1671,7 @@ namespace DBMod
         //float field_Public_Single_2 - m_Stiffness
         //float field_Public_Single_3 - m_Inert
         //float field_Public_Single_4 - m_Radius
-        //float field_Public_Single_5 - m_BoneLength 
+        //float field_Public_Single_5 - m_BoneLength
         //Vector3 field_Public_Vector3_0 - m_Position
         //Vector3 field_Public_Vector3_1 - m_PrevPosition
         //Vector3 field_Public_Vector3_2 - m_EndOffset
@@ -1801,10 +1795,10 @@ namespace DBMod
                 //and this will cause buggy stuff where bones are just disabled.
 
                 //Default behavior is m_distanceToDisable = 10 m_distantDisable = True, but m_ReferenceObject = null. DB docs say with a null refObj
-                //it will use the main camera instead. In my testing with MDB uninstalled this is correct, VRC natively disables distant (10m) away bones. 
+                //it will use the main camera instead. In my testing with MDB uninstalled this is correct, VRC natively disables distant (10m) away bones.
 
-                //Switching to the option below where m_DistantDisable is always true and we just change the value. This way when DistantDisable is true, 
-                //we can use the user's value, be it smaller or larger. 
+                //Switching to the option below where m_DistantDisable is always true and we just change the value. This way when DistantDisable is true,
+                //we can use the user's value, be it smaller or larger.
 
                 bone.m_DistantDisable = true;
                 if (NDBConfig.distanceDisable)
@@ -1815,7 +1809,7 @@ namespace DBMod
                 bone.m_UpdateRate = NDBConfig.dynamicBoneUpdateRate; //Setting both values should make the UpdateRate match instantly, otherwise if lower then default, it will slowly skew to the new UpdateRate
                 //if (!localPlayer.Equals(null) && !localPlayer.transform.Equals(null)) bone.m_ReferenceObject = localPlayer.transform; //= localPlayer?.transform ?? bone.m_ReferenceObject;  //Not needed "If there is no reference object, default main camera is used."
                 if (!NDBConfig.onlyOptimize)
-                    ApplyDBRadius(bone, avatarHash); //Dont adjust radius if we aren't multiplayering 
+                    ApplyDBRadius(bone, avatarHash); //Dont adjust radius if we aren't multiplayering
                 ApplyBoneChanges(bone);
             }
             catch (Exception ex) { LogDebug(ConsoleColor.Red, ex.ToString()); }
@@ -2338,7 +2332,7 @@ namespace DBMod
         {
             try
             {
-                //Removing bones that were not enabled by default from being modified by the Visibility list 
+                //Removing bones that were not enabled by default from being modified by the Visibility list
                 List<DynamicBone> enabledList = new List<DynamicBone>();
                 foreach (DynamicBone b in dynamicBones)
                 {
@@ -2807,7 +2801,7 @@ namespace DBMod
             LogDebugInt(0, ConsoleColor.DarkBlue, $"Resetting player: {playerString}");
             var playerToRemove = avatarsInScene[playerString];
             LogDebugInt(0, ConsoleColor.DarkBlue, $"Resetting player: {playerString} | Avatar: {playerToRemove.Item6.Item1}");
-            //Remove the playerToRemove Colliders from all others 
+            //Remove the playerToRemove Colliders from all others
             foreach (KeyValuePair<string, Tuple<GameObject, bool, DynamicBone[], DynamicBoneCollider[], bool, System.Tuple<string, string, float>>> player in avatarsInScene) //Foreach player
             {
                 foreach (DynamicBone db in player.Value.Item3) //Foreach bone in player avatar
