@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Resources;
+using System.Runtime.InteropServices;
 using MelonLoader;
 // La información general de un ensamblado se controla mediante el siguiente
 // conjunto de atributos. Cambie estos valores de atributo para modificar la información
@@ -33,5 +33,5 @@ using MelonLoader;
 // utilizando el carácter "*", como se muestra a continuación:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: NeutralResourcesLanguage("en")]
-[assembly: MelonInfo(typeof(DBMod.NDB), "MultiplayerDynamicBonesMod", DBMod.NDB.VERSION_STR, "DltDat/charlesdeep, 9E4ECDDE, PatchedPlus+", "https://github.com/9E4ECDDE/MultiplayerDynamicBonesMod/releases")]
-[assembly: MelonGame("VRChat", "VRChat")]
+[assembly: MelonInfo(typeof(DBMod.NDB), "MultiplayerDynamicBonesMod", DBMod.NDB.VERSION_STR, "DltDat/charlesdeep, 9E4ECDDE, P a t c h e d   P l u s +", "https://github.com/9E4ECDDE/MultiplayerDynamicBonesMod/releases")]
+[assembly: MelonGame("VRChat", "VRChat")] 

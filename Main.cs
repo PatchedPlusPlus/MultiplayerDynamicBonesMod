@@ -33,7 +33,7 @@ namespace DBMod
             //LoadCheck.SFC();
         }
 
-        public const string VERSION_STR = "1043.2";
+        public const string VERSION_STR = "1043.3";
 
         private static class NDBConfig
         {
@@ -103,6 +103,7 @@ namespace DBMod
         }
 
         private static NDB _Instance;
+        public static MelonLogger.Instance Logger;
 
         public Dictionary<string, System.Tuple<GameObject, bool, DynamicBone[], DynamicBoneCollider[], bool, System.Tuple<string, string, float>>> avatarsInScene;
         private Dictionary<string, List<OriginalBoneInformation>> originalSettings;
@@ -153,6 +154,7 @@ namespace DBMod
 
         public unsafe override void OnApplicationStart()
         {
+            Logger = new MelonLogger.Instance("MultiplayerDynamicBonesMod", ConsoleColor.DarkCyan);
             _Instance = this;
 
             MelonCoroutines.Start(SetupHighlights());
@@ -726,7 +728,7 @@ namespace DBMod
             MelonPreferences.CreateEntry<bool>("NDB", "OnlyMe", false, "Only I can interact with other bones [QM]");
             MelonPreferences.CreateEntry<bool>("NDB", "OnlyFriends", false, "Only friends and I can interact w/ eachothers bones [QM]");
             MelonPreferences.CreateEntry<bool>("NDB", "DisallowDesktoppers", false, "Desktopers's colliders and bones won't be multiplayer'd [QM]");
-            MelonPreferences.CreateEntry<bool>("NDB", "OnlyHandColliders", false, "Only enable colliders in hands [QM]");
+            MelonPreferences.CreateEntry<bool>("NDB", "OnlyHandColliders", true, "Only enable colliders in hands [QM]");
             MelonPreferences.CreateEntry<bool>("NDB", "OnlyDynamicBonesOnBreasts", false, "Only the breast bones will be multiplayer'd [QM]");
 
             MelonPreferences.CreateEntry<bool>("NDB", "InteractSelf", false, "Add your colliders to your own bones (May cause buggy interactions) [QM]");
@@ -1305,10 +1307,9 @@ namespace DBMod
                     {
                         scaleArmature = ((armature.transform.localScale.x + armature.transform.localScale.y + armature.transform.localScale.z) / 3);
                     }
-                    else
-                        LogDebugInt(1, ConsoleColor.Yellow, $"Armature not found for scale");
-                    string aviName = avatar.transform.root.GetComponentInChildren<VRCPlayer>().prop_ApiAvatar_0.name;
-                    string aviID = avatar.transform.root.GetComponentInChildren<VRCPlayer>().prop_ApiAvatar_0.id;
+                    else LogDebugInt(1, ConsoleColor.Yellow, $"Armature not found for scale");
+                    string aviName = avatar.transform.root.GetComponentInChildren<VRCPlayer>().field_Private_ApiAvatar_0.name; //.prop_ApiAvatar_0.name is getting quest avatar info??
+                    string aviID = avatar.transform.root.GetComponentInChildren<VRCPlayer>().field_Private_ApiAvatar_0.id;
                     string aviHash = aviName.Substring(0, Math.Min(aviName.Length, 20)) + ":" + String.Format("{0:X}", aviID.GetHashCode()).Substring(4);
                     LogDebugInt(1, ConsoleColor.Yellow, $"Avatar: {aviName}, ID: {aviID}");
                     AddAutoCollidersToPlayer(avatar, aviHash);
@@ -2293,7 +2294,7 @@ namespace DBMod
                             if (!bone?.Equals(null) ?? false)
                                 leftDistances.Add(Vector3.Distance(lefthand.position, bone.position));
                         }
-                        catch (Exception ex) { MelonLogger.Msg(ConsoleColor.Red, "" + ex.ToString()); }
+                        catch (Exception ex) { LogDebugError("" + ex.ToString()); }
                     }
                     HumanBodyBones[] rhList = { HumanBodyBones.RightThumbProximal, HumanBodyBones.RightIndexProximal, HumanBodyBones.RightMiddleProximal, HumanBodyBones.RightRingProximal, HumanBodyBones.RightLittleProximal };
                     foreach (HumanBodyBones bodybone in rhList)
@@ -2304,7 +2305,7 @@ namespace DBMod
                             if (!bone?.Equals(null) ?? false)
                                 rightDistances.Add(Vector3.Distance(righthand.position, bone.position));
                         }
-                        catch (Exception ex) { MelonLogger.Msg(ConsoleColor.Red, "" + ex.ToString()); }
+                        catch (Exception ex) { LogDebugError("" + ex.ToString()); }
                     }
                     //MelonLogger.Msg($"New - Left:{leftDistances.Average()}, Right{rightDistances.Average()}");
 
@@ -2476,7 +2477,7 @@ namespace DBMod
                     if (flagAv)
                         LogDebug(ConsoleColor.Red, "Avatar was Null!");
                 }
-                catch (Exception ex) { MelonLogger.Msg(ConsoleColor.Red, "Error in SanityCheck\n" + ex.ToString()); }
+                catch (Exception ex) { LogDebugError("Error in SanityCheck\n" + ex.ToString()); }
             }
         }
 
@@ -2629,7 +2630,7 @@ namespace DBMod
             try
             {
                 //MelonLogger.Msg(ConsoleColor.DarkBlue, "Started drawing editor UI");
-                GUILayout.Label($"Avatar: {localPlayer.GetComponentInChildren<VRCPlayer>()?.prop_VRCAvatarManager_0?.prop_ApiAvatar_0?.name ?? ("error fetching avatar name")}", new GUIStyle() { fontSize = 18 }, new Il2CppReferenceArray<GUILayoutOption>(0));
+                GUILayout.Label($"Avatar: {localPlayer.GetComponentInChildren<VRCPlayer>()?.field_Private_ApiAvatar_0?.name ?? ("error fetching avatar name")}", new GUIStyle() { fontSize = 18 }, new Il2CppReferenceArray<GUILayoutOption>(0));
                 scrollPosition = GUILayout.BeginScrollView(scrollPosition, new GUILayoutOption[] { GUILayout.Width(400), GUILayout.Height(600) });
                 foreach (DynamicBone db in localPlayer.GetComponentsInChildren<DynamicBone>(true))
                 {
@@ -2912,22 +2913,18 @@ namespace DBMod
 
         public static void LogDebug(ConsoleColor color, string text)
         {
-            MelonLogger.Msg(color, text);
-            if (NDBConfig.debugLog > 0)
-                sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
+            Logger.Msg(color, text);
+            if (NDBConfig.debugLog > 0) sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
         }
         public static void LogDebugInt(int lvl, ConsoleColor color, string text)
         {
-            if (NDBConfig.logLevel >= lvl)
-                MelonLogger.Msg(color, text);
-            if (NDBConfig.debugLog > 0 && NDBConfig.debugLog >= lvl)
-                sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
+            if (NDBConfig.logLevel >= lvl) Logger.Msg(color, text);
+            if (NDBConfig.debugLog > 0 && NDBConfig.debugLog >= lvl) sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
         }
         public static void LogDebugError(string text)
         {
-            MelonLogger.Error(text);
-            if (NDBConfig.debugLog > 0)
-                sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
+            Logger.Error(text);
+            if (NDBConfig.debugLog > 0) sb.Append(DateTime.Now.ToString("'['HH':'mm':'ss.fff'] '") + text + Environment.NewLine);
 
         }
 
@@ -2936,8 +2933,8 @@ namespace DBMod
             if (ExtraLogPath is null)
             {
                 ExtraLogPath = "UserData/MDB/Log/" + DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HH'-'mm'-'ss") + ".log";
-                MelonLogger.Msg(ConsoleColor.Yellow, "DebugLog is enabled - This will write a seperate log file to 'UserData\\MDB\\Log'\n This log file may be large depending on the DebugLog Setting");
-                MelonLogger.Msg(ConsoleColor.Red, "This is intended for debugging and rarely may cause crashes due to dumb locking issues with writting the log file.");
+                Logger.Msg(ConsoleColor.Yellow, "DebugLog is enabled - This will write a seperate log file to 'UserData\\MDB\\Log'\n This log file may be large depending on the DebugLog Setting");
+                Logger.Msg(ConsoleColor.Red, "This is intended for debugging and rarely may cause crashes due to dumb locking issues with writting the log file.");
 
             }
             if (!Directory.Exists("UserData/MDB/Log"))
@@ -2959,8 +2956,7 @@ namespace DBMod
             {
                 if (((sb.Length > 100000 && nextUpdate - 5f < Time.time) || nextUpdate < Time.time) && sb.Length > 0)
                 {
-                    if (NDBConfig.debugLog >= 5)
-                        MelonLogger.Msg(ConsoleColor.Gray, "sb length: " + sb.Length);
+                    if (NDBConfig.debugLog >= 5) Logger.Msg(ConsoleColor.Gray, "sb length: " + sb.Length);
                     WriteToFile(sb.ToString());
                     sb.Clear();
                     nextUpdate = Time.time + 10f;
@@ -2969,7 +2965,7 @@ namespace DBMod
             }
             ExtraLogPath = null;
             sb.Clear();
-            MelonLogger.Msg(ConsoleColor.Gray, "End Debug");
+            Logger.Msg(ConsoleColor.Gray, "End Debug");
         }
 
         public async static void WriteToFile(string text)
